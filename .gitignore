@@ -1,0 +1,19 @@
+# Python Virtual Environments
+venv/
+.venv/
+env/
+ENV/
+
+# Python cache & compiled files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Environment & local files
+.env
+.DS_Store
+Thumbs.db
+
+# SQLite database (optional, can be ignored or tracked if needed)
+# library.db

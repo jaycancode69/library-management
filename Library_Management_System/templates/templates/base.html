@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Advanced Library Management System{% endblock %}</title>
+  <meta name="description" content="A state-of-the-art web-based Library Management System built with Flask and modern responsive UI.">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <!-- Navigation Header -->
+  <header class="navbar">
+    <div class="nav-container">
+      <a href="{{ url_for('index') }}" class="brand-logo" id="nav-brand">
+        <div class="brand-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/>
+            <path d="M6 6h10"/>
+            <path d="M6 10h10"/>
+          </svg>
+        </div>
+        <div class="brand-text">Lib<span>Sphere</span></div>
+      </a>
+
+      <nav class="nav-links">
+        <a href="{{ url_for('index') }}" class="nav-link {% if request.endpoint == 'index' %}active{% endif %}" id="nav-catalog">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect width="7" height="7" x="3" y="3" rx="1"/>
+            <rect width="7" height="7" x="14" y="3" rx="1"/>
+            <rect width="7" height="7" x="14" y="14" rx="1"/>
+            <rect width="7" height="7" x="3" y="14" rx="1"/>
+          </svg>
+          Catalog
+        </a>
+
+        {% if session.get('loggedin') %}
+          <a href="{{ url_for('dashboard') }}" class="nav-link {% if request.endpoint == 'dashboard' %}active{% endif %}" id="nav-dashboard">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 3v18h18"/>
+              <path d="m19 9-5 5-4-4-3 3"/>
+            </svg>
+            Dashboard
+          </a>
+          <a href="{{ url_for('logout') }}" class="btn btn-secondary btn-sm" id="nav-logout">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+              <polyline points="16 17 21 12 16 7"/>
+              <line x1="21" x2="9" y1="12" y2="12"/>
+            </svg>
+            Logout
+          </a>
+        {% else %}
+          <a href="{{ url_for('login') }}" class="btn btn-primary btn-sm" id="nav-login">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+              <polyline points="10 17 15 12 10 7"/>
+              <line x1="15" x2="3" y1="12" y2="12"/>
+            </svg>
+            Admin Login
+          </a>
+        {% endif %}
+      </nav>
+    </div>
+  </header>
+
+  <!-- Flash Alerts -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="flash-container">
+        {% for category, message in messages %}
+          <div class="flash-message flash-{{ category }}">
+            <span>{{ message }}</span>
+            <button class="close-btn" onclick="this.parentElement.remove()" style="font-size:1.1rem; color:inherit;">&times;</button>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <!-- Main Content Body -->
+  <main class="main-content">
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <p>&copy; 2026 LibSphere &bull; Advanced Library Management System &bull; Running on Localhost</p>
+  </footer>
+
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

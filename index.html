@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Advanced Library Management System</title>
+<style>
+:root{--bg:#f4f1ea;--card:#fff;--ink:#1f2a37;--mut:#6b7280;--pri:#7c3f1d;--pri2:#a4582a;--line:#e5dfd3;--ok:#1b7f4c;--bad:#b42318;--warn:#b7791f;--side:#2b1a10;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#17120e;--card:#221b15;--ink:#f1e9df;--mut:#a89b8c;--line:#3a2f26;--side:#0f0b08;--pri:#d08a54;--pri2:#e3a16b}}
+:root[data-theme="dark"]{--bg:#17120e;--card:#221b15;--ink:#f1e9df;--mut:#a89b8c;--line:#3a2f26;--side:#0f0b08;--pri:#d08a54;--pri2:#e3a16b}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+h1,h2,h3{font-family:Georgia,"Times New Roman",serif;margin:0 0 .5rem}
+#login{min-height:100vh;display:grid;place-items:center;padding:20px;background:linear-gradient(135deg,#0f172a,#1e3a8a 55%,#7c3f1d)}
+.lbox{background:var(--card);border-radius:16px;padding:32px;width:100%;max-width:400px;box-shadow:0 20px 50px #0006;animation:up .5s}
+.shelf{display:flex;gap:4px;align-items:flex-end;height:60px;margin-bottom:14px;border-bottom:5px solid var(--pri)}
+.shelf i{display:block;width:16px;border-radius:2px 2px 0 0;background:var(--pri2)}
+@keyframes up{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+label{display:block;font-weight:600;margin:10px 0 4px;font-size:13px}
+input,select{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);font:inherit}
+input:focus,select:focus,button:focus-visible{outline:2px solid var(--pri2);outline-offset:1px}
+.btn{background:var(--pri);color:#fff;border:0;border-radius:8px;padding:10px 16px;font:inherit;font-weight:600;cursor:pointer;transition:.15s}
+.btn:hover{background:var(--pri2);transform:translateY(-1px)}.btn.sm{padding:5px 10px;font-size:13px}.btn.ghost{background:transparent;color:var(--pri);border:1px solid var(--pri)}.btn.red{background:var(--bad)}
+.err{color:var(--bad);font-size:13px;min-height:18px;margin-top:8px}
+#app{display:none;min-height:100vh}
+aside{position:fixed;inset:0 auto 0 0;width:220px;background:var(--side);color:#eadfd2;padding:18px 12px;padding-top:calc(18px + env(safe-area-inset-top,0px));z-index:20;transition:.25s}
+aside h2{color:#fff;font-size:17px;padding:0 8px 14px}
+aside a{display:block;padding:10px 12px;border-radius:8px;color:inherit;text-decoration:none;margin-bottom:2px}
+aside a:hover,aside a.on{background:#ffffff1f;color:#fff}
+main{margin-left:220px;padding:20px}
+.top{display:flex;align-items:center;gap:12px;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap}
+#menu{display:none}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:18px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+.stat b{font-size:28px;display:block;font-family:Georgia,serif}.stat span{color:var(--mut);font-size:13px}
+.bar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px}.bar>*{flex:1;min-width:130px}
+.tw{overflow-x:auto}table{width:100%;border-collapse:collapse}
+th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);white-space:nowrap;font-size:14px}
+th{color:var(--mut);font-size:12px;text-transform:uppercase;letter-spacing:.04em;cursor:pointer}
+.tag{padding:2px 9px;border-radius:99px;font-size:12px;font-weight:600;background:#0001}
+.Available,.Returned,.Active{color:var(--ok)}.Issued{color:var(--warn)}.Overdue,.Unavailable,.Inactive{color:var(--bad)}
+dialog{border:0;border-radius:14px;padding:22px;width:min(480px,94vw);background:var(--card);color:var(--ink)}
+dialog::backdrop{background:#0008}
+#toast{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));padding:12px 18px;border-radius:10px;color:#fff;display:none;z-index:50;animation:up .3s}
+.chart{display:flex;align-items:center;gap:8px;margin:6px 0;font-size:13px}.chart div{height:18px;border-radius:4px;background:var(--pri2);min-width:4px;transition:width .6s}
+#thanks{display:none;min-height:100vh;place-items:center;text-align:center;padding:20px;background:linear-gradient(135deg,#2b1a10,#7c3f1d);color:#fff}
+#thanks h1{font-size:clamp(44px,12vw,88px)}
+@media(max-width:800px){aside{transform:translateX(-100%)}aside.open{transform:none}main{margin-left:0;padding:14px}#menu{display:inline-block}}
+.lwrap{display:grid;grid-template-columns:1.1fr .9fr;gap:28px;align-items:center;max-width:920px;width:100%}
+.hero{color:#fff}.hero h2{font-size:clamp(28px,5vw,44px);color:#fff}.hero p{opacity:.8;margin:0 0 18px}
+#covers{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.cov{width:100%;filter:drop-shadow(0 8px 14px #0007);animation:up .6s both;transition:.2s}.cov:hover{transform:translateY(-6px) rotate(-2deg)}
+.ro .edit{display:none!important}.tch td.edit.t{display:table-cell!important}.tch button.edit.t{display:inline-block!important}
+@media(max-width:800px){.lwrap{grid-template-columns:1fr}#covers{grid-template-columns:repeat(6,1fr);gap:6px}}
+.th{display:inline-grid;place-items:center;width:28px;height:40px;border-radius:2px 4px 4px 2px;background:linear-gradient(135deg,var(--a),var(--b));color:#fff;font:700 10px Georgia,serif;border-left:4px solid #0005;margin-right:8px;vertical-align:middle}
+.strip{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;max-width:560px}
+</style>
+</head>
+<body>
+
+<section id="login"><div class="lwrap"><div class="hero"><h2>Digital Library</h2><p>Read. Borrow. Discover.</p><div id="covers"></div></div>
+ <div class="lbox">
+  <h1>Advanced Library</h1><p style="color:var(--mut);margin-top:0">Management System &mdash; librarian sign in</p>
+  <label for="lid">Login ID</label>
+  <input id="lid" autocomplete="username" placeholder="Enter your Login ID" onkeydown="if(event.key==='Enter')$('lpw').focus()">
+  <label for="lpw">Password</label>
+  <input id="lpw" type="password" autocomplete="current-password" placeholder="Enter your password" onkeydown="if(event.key==='Enter')login()">
+  <div class="err" id="lerr" role="alert"></div>
+  <button class="btn" style="width:100%;margin-top:6px" onclick="login()">Login</button>
+  <p style="color:var(--mut);font-size:12px;margin-bottom:0">Librarian, Teacher and Student access.</p>
+ </div></div>
+</section>
+
+<div id="app">
+ <aside id="side"><h2>📚 Advanced Library</h2><nav id="nav"></nav></aside>
+ <main>
+  <div class="top"><div><button class="btn ghost sm" id="menu" onclick="side.classList.toggle('open')" aria-label="Menu">☰ Menu</button> <span id="crumb" style="color:var(--mut)"></span></div>
+  <span style="color:var(--mut)">Signed in as <b id="who"></b></span></div>
+  <div id="view"></div>
+ </main>
+</div>
+
+<section id="thanks"><div><h1>Thank You</h1><p>Thank you for using the Advanced Library Management System.</p><button class="btn" onclick="showLogin()">Back to Login</button></div></section>
+
+<dialog id="dlg"><form id="dform" onsubmit="return false"><h3 id="dt"></h3><div id="df"></div><div class="err" id="derr"></div><div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px"><button type="button" class="btn ghost" onclick="dlg.close()">Cancel</button><button class="btn" id="dsave">Save</button></div></form></dialog>
+<div id="toast" role="status"></div>
+
+<script>
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const iso=d=>d.toISOString().slice(0,10);
+const today=()=>iso(new Date());
+const plus=n=>{const d=new Date();d.setDate(d.getDate()+n);return iso(d)};
+const days=(a,b)=>Math.round((new Date(b)-new Date(a))/864e5);
+const K='alms_v2';
+
+/* ---------- Data layer (lists, dicts, sets, stack, queue) ---------- */
+function seed(){const s=seed0();s.members.forEach((m,i)=>m.pid='P'+(1001+i));s.books.forEach(b=>b.handler='Anish');s.tot={books:5000,avail:3500,members:5000,fine:800};return s}
+function seed0(){
+ const b=(id,isbn,title,author,cat,pub,yr,q,a,sh)=>({id,isbn,title,author,category:cat,publisher:pub,year:yr,qty:q,avail:a,shelf:sh});
+ return{fine:5,seq:{b:9,m:6,t:5},
+ books:[b('B001','9780132350884','Clean Code','Robert C. Martin','Programming','Prentice Hall',2008,4,3,'A1'),
+ b('B002','9780262033848','Introduction to Algorithms','T. H. Cormen','Computer Science','MIT Press',2009,3,2,'A2'),
+ b('B003','9780451524935','1984','George Orwell','Fiction','Signet',1950,5,5,'C3'),
+ b('B004','9780060935467','To Kill a Mockingbird','Harper Lee','Fiction','Harper',1960,3,3,'C4'),
+ b('B005','9788129135520','Wings of Fire','A. P. J. Abdul Kalam','Biography','Universities Press',1999,4,3,'D1'),
+ b('B006','9780321573513','Algorithms','Robert Sedgewick','Computer Science','Addison-Wesley',2011,2,2,'A3'),
+ b('B007','9780143127741','Sapiens','Yuval N. Harari','History','Penguin',2015,3,3,'E2'),
+ b('B008','9781593279288','Python Crash Course','Eric Matthes','Programming','No Starch',2019,4,4,'A1')],
+ members:[{id:'M001',name:'Anish Kumar',email:'anish@example.com',phone:'9876500001',address:'Ahilyanagar',date:'2026-01-10',status:'Active'},
+ {id:'M002',name:'Priya Sharma',email:'priya@example.com',phone:'9876500002',address:'Pune',date:'2026-02-14',status:'Active'},
+ {id:'M003',name:'Rahul Patil',email:'rahul@example.com',phone:'9876500003',address:'Mumbai',date:'2026-03-01',status:'Active'},
+ {id:'M004',name:'Sneha Joshi',email:'sneha@example.com',phone:'9876500004',address:'Nashik',date:'2026-04-20',status:'Active'},
+ {id:'M005',name:'Vikram Singh',email:'vikram@example.com',phone:'9876500005',address:'Delhi',date:'2026-05-05',status:'Inactive'}],
+ tx:[{id:'T001',bookId:'B001',memberId:'M002',issue:plus(-25),due:plus(-11),ret:plus(-8),fine:15},
+ {id:'T002',bookId:'B002',memberId:'M001',issue:plus(-20),due:plus(-6),ret:'',fine:0},
+ {id:'T003',bookId:'B005',memberId:'M003',issue:plus(-3),due:plus(11),ret:'',fine:0},
+ {id:'T004',bookId:'B001',memberId:'M004',issue:plus(-2),due:plus(12),ret:'',fine:0}]};
+}
+let S=null;try{S=JSON.parse(localStorage.getItem(K))}catch(e){}
+if(!S||!S.books)S=seed();
+const save=()=>{try{localStorage.setItem(K,JSON.stringify(S))}catch(e){}};
+const dict=(arr,k='id')=>Object.fromEntries(arr.map(x=>[x[k],x]));            // dictionary for O(1) lookup
+const categories=()=>[...new Set(S.books.map(b=>b.category))].sort();          // set for unique categories
+const nextId=(p,k)=>p+String(S.seq[k]++).padStart(3,'0');
+const undoStack=[];                                                             // stack of recent actions
+const pending=[];                                                               // queue of pending notifications
+const log=m=>{undoStack.push([new Date().toLocaleTimeString(),m]);if(undoStack.length>8)undoStack.shift()};
+const CAT=`To Kill a Mockingbird|Harper Lee|Classics
+1984|George Orwell|Fiction
+Pride and Prejudice|Jane Austen|Romance
+The Alchemist|Paulo Coelho|Fiction
+The Hobbit|J. R. R. Tolkien|Fantasy
+Harry Potter and the Philosopher's Stone|J. K. Rowling|Fantasy
+The Lord of the Rings|J. R. R. Tolkien|Fantasy
+The Catcher in the Rye|J. D. Salinger|Fiction
+Animal Farm|George Orwell|Fiction
+Jane Eyre|Charlotte Brontë|Classics
+Wuthering Heights|Emily Brontë|Classics
+Little Women|Louisa May Alcott|Classics
+The Kite Runner|Khaled Hosseini|Fiction
+The Book Thief|Markus Zusak|Fiction
+The Da Vinci Code|Dan Brown|Mystery
+Angels & Demons|Dan Brown|Mystery
+The Fault in Our Stars|John Green|Young Adult
+The Hunger Games|Suzanne Collins|Young Adult
+Catching Fire|Suzanne Collins|Young Adult
+Mockingjay|Suzanne Collins|Young Adult
+The Chronicles of Narnia|C. S. Lewis|Fantasy
+The Secret Garden|Frances Hodgson Burnett|Children
+The Little Prince|Antoine de Saint-Exupéry|Children
+The Old Man and the Sea|Ernest Hemingway|Classics
+Moby-Dick|Herman Melville|Classics
+Great Expectations|Charles Dickens|Classics
+Oliver Twist|Charles Dickens|Classics
+A Tale of Two Cities|Charles Dickens|Classics
+David Copperfield|Charles Dickens|Classics
+The Adventures of Tom Sawyer|Mark Twain|Classics
+The Adventures of Huckleberry Finn|Mark Twain|Classics
+Robinson Crusoe|Daniel Defoe|Adventure
+Treasure Island|Robert Louis Stevenson|Adventure
+Around the World in Eighty Days|Jules Verne|Adventure
+The Time Machine|H. G. Wells|Science Fiction
+War of the Worlds|H. G. Wells|Science Fiction
+Frankenstein|Mary Shelley|Horror
+Dracula|Bram Stoker|Horror
+The Picture of Dorian Gray|Oscar Wilde|Classics
+The Alchemist's Secret|Scott Mariani|Mystery
+The Silent Patient|Alex Michaelides|Mystery
+The Midnight Library|Matt Haig|Fiction
+The Seven Husbands of Evelyn Hugo|Taylor Jenkins Reid|Fiction
+Where the Crawdads Sing|Delia Owens|Fiction
+Educated|Tara Westover|Biography
+Becoming|Michelle Obama|Biography
+Atomic Habits|James Clear|Self-Help
+The Power of Habit|Charles Duhigg|Self-Help
+Think and Grow Rich|Napoleon Hill|Self-Help
+Rich Dad Poor Dad|Robert Kiyosaki|Finance
+The Psychology of Money|Morgan Housel|Finance
+The 7 Habits of Highly Effective People|Stephen R. Covey|Self-Help
+How to Win Friends and Influence People|Dale Carnegie|Self-Help
+Deep Work|Cal Newport|Self-Help
+The Power of Now|Eckhart Tolle|Self-Help
+Man's Search for Meaning|Viktor E. Frankl|Philosophy
+Ikigai|Héctor García|Self-Help
+Sapiens|Yuval Noah Harari|History
+Homo Deus|Yuval Noah Harari|History
+A Brief History of Time|Stephen Hawking|Science
+Cosmos|Carl Sagan|Science
+The Selfish Gene|Richard Dawkins|Science
+Silent Spring|Rachel Carson|Science
+The Origin of Species|Charles Darwin|Science
+The Art of War|Sun Tzu|Philosophy
+The Republic|Plato|Philosophy
+Meditations|Marcus Aurelius|Philosophy
+The Odyssey|Homer|Classics
+The Iliad|Homer|Classics
+Don Quixote|Miguel de Cervantes|Classics
+The Divine Comedy|Dante Alighieri|Classics
+The Count of Monte Cristo|Alexandre Dumas|Adventure
+Les Misérables|Victor Hugo|Classics
+The Three Musketeers|Alexandre Dumas|Adventure
+The Call of the Wild|Jack London|Adventure
+White Fang|Jack London|Adventure
+The Jungle Book|Rudyard Kipling|Children
+Alice's Adventures in Wonderland|Lewis Carroll|Children
+Through the Looking-Glass|Lewis Carroll|Children
+Peter Pan|J. M. Barrie|Children
+The Wonderful Wizard of Oz|L. Frank Baum|Children
+Charlie and the Chocolate Factory|Roald Dahl|Children
+Matilda|Roald Dahl|Children
+The Giver|Lois Lowry|Young Adult
+The Maze Runner|James Dashner|Young Adult
+Divergent|Veronica Roth|Young Adult
+The Perks of Being a Wallflower|Stephen Chbosky|Young Adult
+Looking for Alaska|John Green|Young Adult
+Paper Towns|John Green|Young Adult
+Tuesdays with Morrie|Mitch Albom|Biography
+The Five People You Meet in Heaven|Mitch Albom|Fiction
+The Monk Who Sold His Ferrari|Robin Sharma|Self-Help
+Wings of Fire|A. P. J. Abdul Kalam|Biography
+The Guide|R. K. Narayan|Fiction
+Train to Pakistan|Khushwant Singh|Fiction
+Malgudi Days|R. K. Narayan|Fiction`;
+function addCatalog(){if(S.tot.fine==null)S.tot.fine=800;if(S.cat)return;const have=new Set(S.books.map(b=>b.title.toLowerCase()));let n=0;
+ CAT.split('\n').forEach(l=>{const [t,a,c]=l.split('|');if(!t||have.has(t.toLowerCase()))return;const id=nextId('B','b');S.books.push({id,isbn:'ISBN-'+id,title:t,author:a,category:c,publisher:'—',year:'',qty:5,avail:5,shelf:'S'+(n%20+1),handler:'Anish'});have.add(t.toLowerCase());n++});S.cat=1;save()}
+addCatalog();
+const CAT2=`Classics::The Great Gatsby|To Kill a Mockingbird|1984|Pride and Prejudice|Jane Eyre|Wuthering Heights|Little Women|Great Expectations|Oliver Twist|A Tale of Two Cities|David Copperfield|The Old Man and the Sea|Moby-Dick|The Catcher in the Rye|The Grapes of Wrath|The Scarlet Letter|The Adventures of Tom Sawyer|The Adventures of Huckleberry Finn|Robinson Crusoe|Treasure Island|The Secret Garden|The Picture of Dorian Gray|Dracula|Frankenstein|The Call of the Wild|White Fang|The Jungle Book|Alice's Adventures in Wonderland|Through the Looking-Glass|Peter Pan|The Wonderful Wizard of Oz|Don Quixote|The Count of Monte Cristo|Les Misérables|The Three Musketeers|The Odyssey|The Iliad|The Divine Comedy|The Republic|Meditations|Crime and Punishment|The Brothers Karamazov|Anna Karenina|War and Peace|The Idiot|Fathers and Sons|Madame Bovary|The Stranger|The Plague|The Metamorphosis
+Modern Fiction::The Alchemist|The Kite Runner|A Thousand Splendid Suns|The Book Thief|The Da Vinci Code|Angels & Demons|Inferno|The Lost Symbol|The Girl with the Dragon Tattoo|The Girl Who Played with Fire|The Girl Who Kicked the Hornets' Nest|The Silent Patient|The Midnight Library|Where the Crawdads Sing|The Seven Husbands of Evelyn Hugo|The Night Circus|The Goldfinch|Normal People|Little Fires Everywhere|The Vanishing Half|The Underground Railroad|The Road|Life of Pi|The Curious Incident of the Dog in the Night-Time|The Lovely Bones|The Help|The Secret History|The Shadow of the Wind|The Name of the Rose|The Pillars of the Earth|The Book of Lost Things|The Ocean at the End of the Lane|Neverwhere|American Gods|Good Omens|The Martian|Project Hail Mary|Ready Player One|Cloud Atlas|Station Eleven|The Handmaid's Tale|The Testaments|The Road to Little Dribbling|The Invisible Life of Addie LaRue|The House in the Cerulean Sea|The Song of Achilles|Circe|The Priory of the Orange Tree|The Invisible Man|The Time Traveler's Wife
+Mystery & Thriller::The Hound of the Baskervilles|A Study in Scarlet|The Sign of Four|The Murder of Roger Ackroyd|Murder on the Orient Express|Death on the Nile|And Then There Were None|The ABC Murders|The Mysterious Affair at Styles|Five Little Pigs|The Big Sleep|The Maltese Falcon|Gone Girl|The Woman in the Window|The Woman in Cabin 10|The Couple Next Door|The Girl on the Train|Sharp Objects|Dark Places|Before I Go to Sleep|The Reversal|The Lincoln Lawyer|The Poet|The Black Echo|The Snowman|The Bat|The Leopard|The Redbreast|The Chestnut Man|The Keeper of Lost Causes|The Dry|Force of Nature|The Whisper Man|The Chalk Man|The Hunting Party|The Guest List|The Sanatorium|The Paris Apartment|The It Girl|The Last Thing He Told Me|The Couple at No. 9|The Family Upstairs|The Family Remains|The Good Daughter|The Last Mrs. Parrish|The Other Mrs.|The Turn of the Key|The Lying Game|The Woman in the Library|The Maid
+Science Fiction::Dune|Dune Messiah|Children of Dune|Foundation|Foundation and Empire|Second Foundation|I, Robot|The Caves of Steel|The Naked Sun|The Left Hand of Darkness|The Dispossessed|Neuromancer|Snow Crash|Do Androids Dream of Electric Sheep?|Fahrenheit 451|Brave New World|The War of the Worlds|The Time Machine|The Invisible Man|The First Men in the Moon|The Martian Chronicles|The Illustrated Man|The Hitchhiker's Guide to the Galaxy|The Restaurant at the End of the Universe|Life, the Universe and Everything|Ender's Game|Speaker for the Dead|The Forever War|Starship Troopers|Childhood's End|2001: A Space Odyssey|2010: Odyssey Two|Jurassic Park|The Lost World|The Andromeda Strain|Sphere|Contact|Solaris|Roadside Picnic|The Three-Body Problem|The Dark Forest|Death's End|The Fifth Season|The Obelisk Gate|The Stone Sky|Hyperion|The Fall of Hyperion|The Stars My Destination|A Wrinkle in Time|The City & the City
+Fantasy::The Hobbit|The Fellowship of the Ring|The Two Towers|The Return of the King|Harry Potter and the Philosopher's Stone|Harry Potter and the Chamber of Secrets|Harry Potter and the Prisoner of Azkaban|Harry Potter and the Goblet of Fire|Harry Potter and the Order of the Phoenix|Harry Potter and the Half-Blood Prince|Harry Potter and the Deathly Hallows|The Lion, the Witch and the Wardrobe|Prince Caspian|The Voyage of the Dawn Treader|The Silver Chair|The Horse and His Boy|The Magician's Nephew|The Last Battle|A Game of Thrones|A Clash of Kings|A Storm of Swords|A Feast for Crows|A Dance with Dragons|The Name of the Wind|The Wise Man's Fear|The Way of Kings|Words of Radiance|Oathbringer|Rhythm of War|Mistborn|The Well of Ascension|The Hero of Ages|The Final Empire|The Blade Itself|Before They Are Hanged|Last Argument of Kings|The Once and Future King|The Earthsea Trilogy|A Wizard of Earthsea|The Tombs of Atuan|The Farthest Shore|Stardust|The Ocean at the End of the Lane|The Golden Compass|The Subtle Knife|The Amber Spyglass|Eragon|Eldest|Brisingr|Inheritance
+Romance::The Notebook|The Wedding|Message in a Bottle|A Walk to Remember|Dear John|Safe Haven|The Choice|Nights in Rodanthe|Me Before You|After You|Still Me|One Day|The Rosie Project|The Rosie Effect|Love, Rosie|The Fault in Our Stars|Looking for Alaska|Paper Towns|Eleanor & Park|Red, White & Royal Blue|The Hating Game|Beach Read|People We Meet on Vacation|Book Lovers|It Ends with Us|It Starts with Us|The Kiss Quotient|The Wedding Date|The Unhoneymooners|The Flatshare|One Last Stop|The Light We Lost|The Time Traveler's Wife|The Bridges of Madison County|Love in the Time of Cholera|The Princess Bride|Far from the Madding Crowd|Sense and Sensibility|Persuasion|Emma|Northanger Abbey|Mansfield Park|The Age of Innocence|Rebecca|The Thorn Birds|The English Patient|Water for Elephants|The Light Between Oceans|The Paris Library
+Self-Help::Atomic Habits|The Power of Habit|Deep Work|Digital Minimalism|Essentialism|The 7 Habits of Highly Effective People|How to Win Friends and Influence People|Think and Grow Rich|The Power of Now|Man's Search for Meaning|The Monk Who Sold His Ferrari|Who Moved My Cheese?|The Secret|The Magic of Thinking Big|Awaken the Giant Within|Unlimited Power|The Compound Effect|The One Thing|Eat That Frog!|Getting Things Done|Mindset|Grit|Drive|Start with Why|Leaders Eat Last|Dare to Lead|The 5 AM Club|The Miracle Morning|Make Your Bed|Can't Hurt Me|The Mountain Is You|The Courage to Be Disliked|Ikigai|The Art of Happiness|The Four Agreements|The Alchemist's Way|The Subtle Art of Not Giving a F*ck|Everything Is Figureoutable|The Confidence Gap|The Gifts of Imperfection|The Happiness Project|The Art of Possibility|The War of Art|Show Your Work!|Steal Like an Artist|Big Magic|The Creative Act|The Artist's Way|Quiet|Thinking, Fast and Slow
+Business & Finance::Rich Dad Poor Dad|The Psychology of Money|The Intelligent Investor|One Up On Wall Street|Common Stocks and Uncommon Profits|The Little Book of Common Sense Investing|A Random Walk Down Wall Street|Security Analysis|The Millionaire Next Door|The Richest Man in Babylon|The Total Money Makeover|Your Money or Your Life|The Automatic Millionaire|The Millionaire Fastlane|The Simple Path to Wealth|The Essays of Warren Buffett|Principles|Good to Great|Built to Last|Blue Ocean Strategy|The Lean Startup|Zero to One|The Hard Thing About Hard Things|Rework|Good Strategy Bad Strategy|The Innovator's Dilemma|Crossing the Chasm|Measure What Matters|The E-Myth Revisited|Start Something That Matters|The $100 Startup|The 4-Hour Workweek|The Personal MBA|Influence|Contagious|Hooked|Purple Cow|Made to Stick|Positioning|The 22 Immutable Laws of Marketing|Marketing Management|Principles of Marketing|The 1-Page Marketing Plan|Jab, Jab, Jab, Right Hook|Crushing It!|Shoe Dog|Steve Jobs|Elon Musk|The Everything Store|Becoming Steve Jobs
+Science & Technology::A Brief History of Time|The Universe in a Nutshell|Cosmos|Astrophysics for People in a Hurry|Pale Blue Dot|The Elegant Universe|The Fabric of the Cosmos|The Selfish Gene|The Gene|Sapiens|Homo Deus|21 Lessons for the 21st Century|Guns, Germs, and Steel|The Origin of Species|On the Origin of Species|Silent Spring|The Double Helix|Surely You're Joking, Mr. Feynman!|Six Easy Pieces|Seven Brief Lessons on Physics|The Demon-Haunted World|The Structure of Scientific Revolutions|The Code Book|The Information|Life 3.0|Superintelligence|The Singularity Is Near|Artificial Intelligence|Deep Learning|Hands-On Machine Learning|Python Crash Course|Automate the Boring Stuff with Python|Clean Code|The Pragmatic Programmer|Design Patterns|Computer Networking|Operating System Concepts|Database System Concepts|Introduction to Algorithms|Computer Architecture|Artificial Intelligence: A Modern Approach|Computer Systems: A Programmer's Perspective|Don't Make Me Think|The Clean Coder|Code Complete|Head First Java|Head First Python|Learning SQL|Eloquent JavaScript|JavaScript: The Good Parts
+Indian Literature::Wings of Fire|Ignited Minds|My Journey|The Guide|Malgudi Days|Swami and Friends|The Bachelor of Arts|The English Teacher|The Vendor of Sweets|Train to Pakistan|The Room on the Roof|The Blue Umbrella|The God of Small Things|Midnight's Children|The Inheritance of Loss|The White Tiger|A Suitable Boy|The Namesake|Interpreter of Maladies|The Palace of Illusions|The Immortals of Meluha|The Secret of the Nagas|The Oath of the Vayuputras|Chanakya's Chant|Five Point Someone|One Indian Girl|2 States|Revolution 2020|Half Girlfriend|The 3 Mistakes of My Life|The Ministry of Utmost Happiness|The Great Indian Novel|The Shadow Lines|The Calcutta Chromosome|Sea of Poppies|The Lowland|The Glass Palace|The Hungry Tide|The Illicit Happiness of Other People|The Last Mughal|The Argumentative Indian|An Era of Darkness|India After Gandhi|Discovery of India|My Experiments with Truth|Untouchable|Coolie|Godan|Gitanjali`;
+function addCatalog2(){if(S.cat2)return;const have=new Set(S.books.map(b=>b.title.toLowerCase()));let n=0;
+ CAT2.split('\n').forEach(l=>{const [c,list]=l.split('::');list.split('|').forEach(t=>{if(!t||have.has(t.toLowerCase()))return;const id=nextId('B','b');S.books.push({id,isbn:'ISBN-'+id,title:t,author:'—',category:c,publisher:'—',year:'',qty:5,avail:5,shelf:'R'+(n%30+1),handler:'Anish'});have.add(t.toLowerCase());n++})});S.cat2=1;save()}
+const FN='Aarav Vivaan Aditya Arjun Sai Ishaan Krishna Rohan Rahul Amit Sanjay Vikram Suresh Rajesh Nikhil Karan Ravi Manish Deepak Harsh Ananya Diya Aadhya Saanvi Priya Neha Pooja Kavya Riya Sneha Isha Meera Anjali Shreya Nisha Tanvi Aisha Fatima Zoya Simran Gurpreet Harleen Lakshmi Radha Sita Divya Swati Komal'.split(' ');
+const LN='Sharma Verma Patil Joshi Kulkarni Deshmukh Jadhav Pawar Shinde More Gaikwad Kale Bhosale Chavan Nair Iyer Reddy Rao Naidu Menon Pillai Gupta Agarwal Jain Mehta Shah Patel Desai Trivedi Bhatt Singh Kaur Gill Sandhu Khan Ansari Qureshi Sheikh Das Ghosh Banerjee Chatterjee Mukherjee Roy Sen Bose Dutta Mishra Tiwari'.split(' ');
+const CITY=['Pune','Mumbai','Nashik','Nagpur','Ahilyanagar','Kolhapur','Delhi','Hyderabad','Chennai','Kolkata'];
+function addMembers(){if(S.mem)return;const N=FN.length,M=LN.length;
+ for(let i=0;i<4995;i++){const c=Math.floor(i/(N*M)),f=FN[i%N],l=LN[Math.floor(i/N)%M],id=nextId('M','m');
+  S.members.push({id,pid:'P'+(1006+i),name:f+(c?' '+'ABCDEFGHIJ'[c]+'.':'')+' '+l,email:(f+'.'+l+'.'+id).toLowerCase()+'@example.com',phone:'98'+String(10000000+i*37),address:CITY[i%CITY.length],date:'2026-0'+(1+i%9)+'-'+String(1+i%28).padStart(2,'0'),status:i%13?'Active':'Inactive'})}
+ S.tot.members=5000;S.mem=1;save()}
+addCatalog2();addMembers();
+const status=t=>t.ret?'Returned':(t.due<today()?'Overdue':'Issued');
+const fineFor=(due,ret)=>Math.max(0,days(due,ret))*S.fine;
+function toast(m,ok=true){pending.push([m,ok]);const t=$('toast');const [msg,g]=pending.shift();t.textContent=msg;t.style.background=g?'var(--ok)':'var(--bad)';t.style.display='block';clearTimeout(toast.h);toast.h=setTimeout(()=>t.style.display='none',2800)}
+
+/* ---------- Generic modal form ---------- */
+function form(title,fields,vals,onSave){
+ $('dt').textContent=title;$('derr').textContent='';
+ $('df').innerHTML=fields.map(([k,l,t,req,opts])=>`<label for="f_${k}">${l}${req?' *':''}</label>`+(t==='select'?`<select id="f_${k}">${opts.map(o=>`<option ${o===vals[k]?'selected':''}>${esc(o)}</option>`).join('')}</select>`:`<input id="f_${k}" type="${t||'text'}" value="${esc(vals[k]??'')}" ${req?'required':''}>`)).join('');
+ $('dform').onsubmit=e=>{e.preventDefault();const o={};for(const [k,l,t,req] of fields){o[k]=$('f_'+k).value.trim();if(req&&!o[k]){$('derr').textContent=l+' is required.';return false}}
+  const r=onSave(o);if(r){$('derr').textContent=r;return false}dlg.close();return false};
+ dlg.showModal();
+}
+
+/* ---------- Auth ---------- */
+const USERS={jay23:{p:'jay2312',role:'admin'},anish:{p:'anish1907',role:'admin'},student:{p:'student',role:'student'},teacher:{p:'teacher123',role:'teacher'}};
+const LBL={admin:'jay23 (Librarian)',teacher:'teacher',student:'student'};
+const ACL={admin:['dashboard','books','members','issue','return','search','transactions','reports','about','logout'],teacher:['dashboard','books','members','search','transactions','reports','about','logout'],student:['dashboard','books','search','about','logout']};
+let ROLE='';
+function login(){const id=$('lid').value.trim().toLowerCase(),pw=$('lpw').value,u=USERS[id];
+ if(!id||!pw){$('lerr').textContent='Enter your Login ID and password.';return}
+ if(!u||u.p!==pw){$('lerr').textContent='Invalid Login ID or password.';return}
+ ROLE=u.role;try{sessionStorage.setItem('role',ROLE)}catch(e){}$('lpw').value='';enter()}
+function enter(){$('login').style.display='none';$('thanks').style.display='none';$('app').style.display='block';document.body.classList.toggle('ro',ROLE!=='admin');document.body.classList.toggle('tch',ROLE==='teacher');$('who').textContent=LBL[ROLE];buildNav();go('dashboard')}
+function logout(){ROLE='';try{sessionStorage.removeItem('role')}catch(e){}$('app').style.display='none';$('thanks').style.display='grid';location.hash=''}
+function showLogin(){$('lpw').value='';$('thanks').style.display='none';$('login').style.display='grid';$('lid').value='';$('lerr').textContent=''}
+
+/* ---------- Router ---------- */
+const NAV=[['dashboard','🏠 Dashboard'],['books','📖 Books'],['members','👥 Members'],['issue','📤 Issue Book'],['return','📥 Return Book'],['search','🔍 Search'],['transactions','🧾 Transactions'],['reports','📊 Reports'],['about','ℹ️ About'],['logout','🚪 Logout']];
+const buildNav=()=>{$('nav').innerHTML=NAV.filter(n=>ACL[ROLE].includes(n[0])).map(([r,l])=>`<a href="#${r}" data-r="${r}">${l}</a>`).join('')};
+addEventListener('hashchange',()=>{if($('app').style.display==='block')go(location.hash.slice(1))});
+function go(r){if(r==='logout')return logout();if(!V[r]||!ACL[ROLE].includes(r))r='dashboard';
+ document.querySelectorAll('#nav a').forEach(a=>a.classList.toggle('on',a.dataset.r===r));
+ $('crumb').textContent=NAV.find(n=>n[0]===r)[1];side.classList.remove('open');$('view').innerHTML=V[r]();if(A[r])A[r]()}
+const tbl=(h,rows,lim=1e9)=>`<div class="tw"><table><thead><tr>${h.map(x=>`<th>${x}</th>`).join('')}</tr></thead><tbody>${rows.slice(0,lim).join('')||`<tr><td colspan="${h.length}" style="color:var(--mut)">No records found.</td></tr>`}</tbody></table></div>${rows.length>lim?`<p style="color:var(--mut)">Showing first ${lim} of ${rows.length}. Use search to narrow down.</p>`:''}`;
+const thumb=t=>{let h=0;for(const c of t)h=(h*31+c.charCodeAt(0))%360;const w=t.split(/\s+/).filter(x=>/[A-Za-z0-9]/.test(x)).slice(0,2).map(x=>x[0]).join('').toUpperCase();return`<span class="th" style="--a:hsl(${h} 55% 38%);--b:hsl(${(h+40)%360} 60% 22%)">${esc(w)}</span>`};
+const tag=s=>`<span class="tag ${s}">${s}</span>`;
+const stat=(n,l)=>`<div class="card stat"><b>${n}</b><span>${l}</span></div>`;
+const counts=()=>{const t=S.tx,open=t.filter(x=>!x.ret);return{books:S.tot.books,avail:S.tot.avail,issued:S.tot.books-S.tot.avail,members:S.tot.members,over:open.filter(x=>x.due<today()).length,fines:S.tot.fine}};
+const txRow=t=>{const b=dict(S.books)[t.bookId]||{},m=dict(S.members)[t.memberId]||{},s=status(t);return`<tr><td>${t.id}</td><td>${t.bookId}</td><td>${esc(b.title)}</td><td>${t.memberId}</td><td>${esc(m.pid)}</td><td>${esc(m.name)}</td><td>${t.issue}</td><td>${t.due}</td><td>${t.ret||'—'}</td><td>${tag(s)}</td><td>₹${t.fine||0}</td><td class="edit t"><button class="btn sm ghost" onclick="txForm('${t.id}')">Edit</button></td></tr>`};
+const TXH=['ID','Book ID','Title','Member ID','PID','Member','Issued','Due','Returned','Status','Fine',''];
+
+const V={},A={};
+/* Dashboard */
+V.dashboard=()=>{const c=counts();return`<div class="top"><h1>Dashboard</h1><button class="btn ghost edit t" onclick="editTotals()">✎ Edit totals</button></div><div class="card" style="margin-bottom:14px"><h3>Welcome to the Digital Library</h3><div class="strip">${covHTML('D')}</div></div><div class="grid">${stat(c.books,'Total Books')}${stat(c.avail,'Available Books')}${stat(c.issued,'Issued Books')}${stat(c.members,'Total Members')}${stat(c.over,'Overdue Books')}${stat('₹'+c.fines,'Total Fine')}</div>
+${ROLE==='student'?'':`<div class="card"><h3>Recent Transactions</h3>${tbl(TXH,[...S.tx].reverse().slice(0,6).map(txRow))}</div>`}
+<div class="card" style="margin-top:14px"><h3>Recent Actions</h3>${undoStack.length?[...undoStack].reverse().map(a=>`<div style="color:var(--mut)">${a[0]} — ${esc(a[1])}</div>`).join(''):'<span style="color:var(--mut)">No actions yet this session.</span>'}</div>`};
+
+function editTotals(){if(!['admin','teacher'].includes(ROLE))return;form('Edit Library Totals',[['books','Total Books','number',1],['avail','Available Books','number',1],['members','Total Members','number',1],['fine','Total Fine (₹)','number',1]],S.tot,o=>{const b=+o.books,a=+o.avail,m=+o.members,f=+o.fine;if([b,a,m,f].some(x=>!Number.isInteger(x)||x<0))return'Enter whole numbers (0 or more).';if(a>b)return'Available books cannot exceed total books.';S.tot={books:b,avail:a,members:m,fine:f};log('Updated library totals');save();toast('Totals updated.');go('dashboard')})}
+function txForm(id){if(!['admin','teacher'].includes(ROLE))return;const t=S.tx.find(x=>x.id===id);
+ form('Edit Transaction '+id,[['bookId','Book Number','text',1],['issue','Issue Date','date',1],['due','Due Date','date',1],['ret','Return Date (blank = not returned)','date'],['fine','Fine (₹)','number']],t,o=>{
+  const nb=S.books.find(b=>b.id===o.bookId),ob=S.books.find(b=>b.id===t.bookId);
+  if(!nb)return'Book number not found.';if(o.due<o.issue)return'Due date cannot be before issue date.';if(o.ret&&o.ret<o.issue)return'Return date cannot be before issue date.';
+  if(!t.ret&&ob)ob.avail=Math.min(ob.qty,ob.avail+1);
+  if(!o.ret){if(nb.avail<1){if(!t.ret&&ob)ob.avail--;return'No copies of that book are available.'}nb.avail--}
+  Object.assign(t,{bookId:o.bookId,issue:o.issue,due:o.due,ret:o.ret,fine:+o.fine||0});log('Edited transaction '+id);save();toast('Transaction updated.');go('transactions')})}
+/* Books */
+const bs={q:'',cat:'',sort:'title'};
+V.books=()=>`<div class="top"><h1>Books</h1><button class="btn edit" onclick="bookForm()">+ Add Book</button></div>
+<div class="bar"><input id="bq" placeholder="Search title, author, ISBN, ID…" aria-label="Search books"><select id="bc" aria-label="Category"><option value="">All categories</option>${categories().map(c=>`<option>${esc(c)}</option>`).join('')}</select><select id="bsort" aria-label="Sort"><option value="title">Sort: Title</option><option value="author">Sort: Author</option><option value="year">Sort: Year</option><option value="avail">Sort: Availability</option></select></div><div class="card" id="bt"></div>`;
+A.books=()=>{const d=()=>{bs.q=$('bq').value.toLowerCase();bs.cat=$('bc').value;bs.sort=$('bsort').value;
+ let r=S.books.filter(b=>(!bs.cat||b.category===bs.cat)&&[b.id,b.isbn,b.title,b.author].join(' ').toLowerCase().includes(bs.q));
+ r.sort((a,b)=>bs.sort==='year'?b.year-a.year:bs.sort==='avail'?b.avail-a.avail:String(a[bs.sort]).localeCompare(b[bs.sort]));
+ $('bt').innerHTML=tbl(['ID','ISBN','Book Name','Author','Category','Publisher','Year','No. of Books','Available','Shelf','Handler','Status',''],r.map(b=>`<tr><td>${b.id}</td><td>${esc(b.isbn)}</td><td>${thumb(b.title)}${esc(b.title)}</td><td>${esc(b.author)}</td><td>${esc(b.category)}</td><td>${esc(b.publisher)}</td><td>${b.year}</td><td>${b.qty}</td><td>${b.avail}</td><td>${esc(b.shelf)}</td><td>${esc(b.handler||'')}</td><td>${tag(b.avail>0?'Available':'Unavailable')}</td><td class="edit"><button class="btn sm ghost" onclick="bookForm('${b.id}')">Edit</button> <button class="btn sm red" onclick="delBook('${b.id}')">Delete</button></td></tr>`),200)};
+ ['bq','bc','bsort'].forEach(i=>$(i).oninput=d);d()};
+function bookForm(id){const old=id&&S.books.find(b=>b.id===id);
+ form(old?'Edit Book':'Add Book',[['id','Book Number','text',1],['isbn','ISBN','text',1],['title','Book Name','text',1],['author','Author','text',1],['category','Category','text',1],['publisher','Publisher'],['year','Publication Year','number'],['qty','Number of Books','number',1],['avail','Available Copies','number',1],['shelf','Shelf / Rack No.','text'],['handler','Handler','text',1]],old||{id:'B'+String(S.seq.b).padStart(3,'0'),qty:1,avail:1,handler:'Anish'},o=>{
+  if(S.books.some(b=>b.isbn===o.isbn&&b!==old))return'A book with this ISBN already exists.';
+  if(S.books.some(b=>b.id===o.id&&b!==old))return'This book number already exists.';
+  const q=parseInt(o.qty),a=parseInt(o.avail);if(!(q>=0)||!(a>=0)||a>q)return'Enter valid numbers (available cannot exceed number of books).';
+  const rec={...o,qty:q,avail:a,year:+o.year||''};
+  if(old){if(o.id!==old.id)S.tx.forEach(t=>{if(t.bookId===old.id)t.bookId=o.id});Object.assign(old,rec);log('Edited book '+o.title)}
+  else{S.seq.b++;S.books.push(rec);log('Added book '+o.title)}
+  save();toast('Book saved.');go('books')})}
+function delBook(id){const b=S.books.find(x=>x.id===id);if(S.tx.some(t=>t.bookId===id&&!t.ret))return toast('Cannot delete: copies are currently issued.',false);
+ if(!confirm('Delete "'+b.title+'"?'))return;S.books=S.books.filter(x=>x.id!==id);log('Deleted book '+b.title);save();toast('Book deleted.');go('books')}
+
+/* Members */
+V.members=()=>`<div class="top"><h1>Members</h1><button class="btn edit" onclick="memForm()">+ Add Member</button></div><div class="bar"><input id="mq" placeholder="Search members…" aria-label="Search members"></div><div class="card" id="mt"></div>`;
+A.members=()=>{const d=()=>{const q=$('mq').value.toLowerCase();$('mt').innerHTML=tbl(['ID','PID','Name','Email','Phone','Address','Joined','Status',''],S.members.filter(m=>Object.values(m).join(' ').toLowerCase().includes(q)).map(m=>`<tr><td>${m.id}</td><td>${esc(m.pid)}</td><td>${esc(m.name)}</td><td>${esc(m.email)}</td><td>${esc(m.phone)}</td><td>${esc(m.address)}</td><td>${m.date}</td><td>${tag(m.status)}</td><td class="edit"><button class="btn sm ghost" onclick="memForm('${m.id}')">Edit</button> <button class="btn sm red" onclick="delMem('${m.id}')">Delete</button></td></tr>`),100)};$('mq').oninput=d;d()};
+function memForm(id){const old=id&&S.members.find(m=>m.id===id);
+ form(old?'Edit Member':'Add Member',[['pid','PID','text',1],['name','Name','text',1],['email','Email','email',1],['phone','Phone','tel',1],['address','Address'],['date','Membership Date','date',1],['status','Status','select',0,['Active','Inactive']]],old||{pid:'P'+(1000+S.seq.m),date:today(),status:'Active'},o=>{
+  if(!/^\d{10}$/.test(o.phone))return'Phone must be 10 digits.';
+  if(S.members.some(m=>m.pid===o.pid&&m.id!==id))return'This PID already exists.';
+  if(S.members.some(m=>m.email.toLowerCase()===o.email.toLowerCase()&&m.id!==id))return'A member with this email already exists.';
+  if(old){Object.assign(old,o);log('Edited member '+o.name)}else{S.members.push({id:nextId('M','m'),...o});log('Added member '+o.name)}
+  save();toast('Member saved.');go('members')})}
+function delMem(id){if(S.tx.some(t=>t.memberId===id&&!t.ret))return toast('Cannot delete: member has unreturned books.',false);
+ if(!confirm('Delete this member?'))return;S.members=S.members.filter(m=>m.id!==id);log('Deleted member '+id);save();toast('Member deleted.');go('members')}
+
+/* Issue */
+V.issue=()=>`<h1>Issue Book</h1><div class="card" style="max-width:520px"><label for="imq">Search member</label><input id="imq" placeholder="Name, ID or PID"><label for="im">Member</label><select id="im"></select>
+<label for="ib">Book</label><select id="ib">${S.books.map(b=>`<option value="${b.id}">${b.id} — ${esc(b.title)} (${b.avail} available)</option>`).join('')}</select>
+<label for="id1">Issue date</label><input type="date" id="id1" value="${today()}"><label for="id2">Due date</label><input type="date" id="id2" value="${plus(14)}">
+<div class="err" id="ierr"></div><button class="btn" onclick="doIssue()">Issue Book</button></div>`;
+function doIssue(){const m=dict(S.members)[$('im').value],b=dict(S.books)[$('ib').value],i=$('id1').value,d=$('id2').value;
+ const er=m=>{$('ierr').textContent=m;toast(m,false)};
+ if(!m)return er('Member not found.');if(!b)return er('Book not found.');if(!i||!d)return er('Enter issue and due dates.');if(d<i)return er('Due date cannot be before issue date.');
+ if(b.avail<1)return er('No copies of this book are available.');
+ if(S.tx.some(t=>!t.ret&&t.bookId===b.id&&t.memberId===m.id))return er('This member already has this book.');
+ b.avail--;S.tot.avail=Math.max(0,S.tot.avail-1);S.tx.push({id:nextId('T','t'),bookId:b.id,memberId:m.id,issue:i,due:d,ret:'',fine:0});log(`Issued "${b.title}" to ${m.name}`);save();toast('Book issued successfully.');go('issue')}
+
+A.issue=()=>{const f=()=>{const q=$('imq').value.toLowerCase();$('im').innerHTML=S.members.filter(m=>m.status==='Active'&&(m.id+' '+m.pid+' '+m.name).toLowerCase().includes(q)).slice(0,100).map(m=>`<option value="${m.id}">${m.id} — ${esc(m.name)}</option>`).join('')};$('imq').oninput=f;f()};
+/* Return */
+V.return=()=>{const open=S.tx.filter(t=>!t.ret),bk=dict(S.books),mm=dict(S.members);return`<h1>Return Book</h1><div class="card" style="max-width:560px"><label for="rt">Issued transaction</label><select id="rt">${open.map(t=>`<option value="${t.id}">${t.id} — ${esc(bk[t.bookId].title)} → ${esc(mm[t.memberId].name)} (due ${t.due})</option>`).join('')||'<option value="">No books currently issued</option>'}</select>
+<label for="rd">Return date</label><input type="date" id="rd" value="${today()}"><div id="rinfo" style="margin:12px 0;color:var(--mut)"></div><button class="btn" onclick="doReturn()">Return Book</button></div>
+<p style="color:var(--mut)">Fine rate: ₹<input type="number" min="0" id="fr" value="${S.fine}" style="width:80px;display:inline-block" onchange="S.fine=Math.max(0,+this.value||0);save();toast('Fine rate updated.')"> per overdue day.</p>`};
+A.return=()=>{const u=()=>{const t=S.tx.find(x=>x.id===$('rt').value);if(!t){$('rinfo').textContent='';return}const od=Math.max(0,days(t.due,$('rd').value));$('rinfo').innerHTML=`Issued: <b>${t.issue}</b> · Due: <b>${t.due}</b> · Overdue days: <b>${od}</b> · Fine: <b>₹${od*S.fine}</b>`};$('rt').onchange=u;$('rd').onchange=u;u()};
+function doReturn(){const t=S.tx.find(x=>x.id===$('rt').value),r=$('rd').value;if(!t)return toast('Invalid transaction.',false);if(!r||r<t.issue)return toast('Return date cannot be before issue date.',false);
+ t.ret=r;t.fine=fineFor(t.due,r);S.tot.fine+=t.fine;const b=S.books.find(x=>x.id===t.bookId);if(b)b.avail=Math.min(b.qty,b.avail+1);S.tot.avail=Math.min(S.tot.books,S.tot.avail+1);log(`Returned ${t.bookId}, fine ₹${t.fine}`);save();toast(t.fine?`Returned. Fine: ₹${t.fine}`:'Book returned. No fine.');go('return')}
+
+/* Search */
+V.search=()=>`<h1>Search</h1><div class="bar"><datalist id="bn">${S.books.map(b=>`<option value="${esc(b.title)}">`).join('')}</datalist><input id="sq" list="bn" placeholder="Title, author, ISBN, category, Book ID, member name or ID…" aria-label="Search everything"></div><div id="sr"></div>`;
+A.search=()=>{$('sq').oninput=()=>{const q=$('sq').value.trim().toLowerCase();if(!q){$('sr').innerHTML='<p style="color:var(--mut)">Type to search books and members.</p>';return}
+ const B=S.books.filter(b=>[b.id,b.isbn,b.title,b.author,b.category].join(' ').toLowerCase().includes(q)),M=S.members.filter(m=>(m.id+' '+m.pid+' '+m.name).toLowerCase().includes(q));
+ $('sr').innerHTML=`<div class="card"><h3>Books (${B.length})</h3>${tbl(['ID','ISBN','Book Name','Author','Category','Available','Status'],B.map(b=>`<tr><td>${b.id}</td><td>${esc(b.isbn)}</td><td>${thumb(b.title)}${esc(b.title)}</td><td>${esc(b.author)}</td><td>${esc(b.category)}</td><td>${b.avail}/${b.qty}</td><td>${tag(b.avail>0?'Available':'Unavailable')}</td></tr>`))}</div><div class="card" style="margin-top:14px"><h3>Members (${M.length})</h3>${tbl(['ID','Name','Email','Phone','Status'],M.map(m=>`<tr><td>${m.id}</td><td>${esc(m.name)}</td><td>${esc(m.email)}</td><td>${esc(m.phone)}</td><td>${tag(m.status)}</td></tr>`),50)}</div>`};$('sq').oninput()};
+
+/* Transactions */
+V.transactions=()=>`<h1>Transactions</h1><div class="bar"><input id="tq" placeholder="Search…" aria-label="Search transactions"><select id="tf" aria-label="Status filter"><option value="">All</option><option>Issued</option><option>Returned</option><option>Overdue</option></select><select id="ts" aria-label="Sort"><option value="new">Newest first</option><option value="old">Oldest first</option><option value="fine">Highest fine</option></select></div><div class="card" id="tt"></div>`;
+A.transactions=()=>{const d=()=>{const q=$('tq').value.toLowerCase(),f=$('tf').value,s=$('ts').value,bk=dict(S.books),mm=dict(S.members);
+ let r=S.tx.filter(t=>(!f||status(t)===f)&&[t.id,t.bookId,t.memberId,bk[t.bookId]?.title,mm[t.memberId]?.name,mm[t.memberId]?.pid].join(' ').toLowerCase().includes(q));
+ r=s==='old'?r:s==='fine'?r.sort((a,b)=>b.fine-a.fine):[...r].reverse();$('tt').innerHTML=tbl(TXH,r.map(txRow))};['tq','tf','ts'].forEach(i=>$(i).oninput=d);d()};
+
+/* Reports */
+const chart=(rows,unit)=>{const mx=Math.max(1,...rows.map(r=>r[1]));return rows.map(([n,v])=>`<div class="chart"><span style="width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(n)}</span><div style="width:${v/mx*55}%"></div><b>${v}${unit||''}</b></div>`).join('')||'<span style="color:var(--mut)">No data yet.</span>'};
+V.reports=()=>{const c=counts(),bc={},mc={};S.tx.forEach(t=>{bc[t.bookId]=(bc[t.bookId]||0)+1;mc[t.memberId]=(mc[t.memberId]||0)+1});
+ const top=(o,src,f)=>Object.entries(o).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([k,v])=>[f(dict(src)[k]||{}),v]);
+ return`<h1>Reports</h1><div class="grid">${stat(c.books,'Total Books')}${stat(c.avail,'Available')}${stat(c.issued,'Issued')}${stat(c.members,'Members')}${stat(c.over,'Overdue')}${stat('₹'+c.fines,'Fines Collected')}</div>
+<div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(280px,1fr))"><div class="card"><h3>Most Issued Books</h3>${chart(top(bc,S.books,b=>b.title))}</div><div class="card"><h3>Most Active Members</h3>${chart(top(mc,S.members,m=>m.name))}</div></div>
+<div class="card"><h3>Books by Category</h3>${chart(categories().map(c=>[c,S.books.filter(b=>b.category===c).length]))}</div>
+<button class="btn ghost edit" style="margin-top:14px" onclick="if(confirm('Reset all data to the sample data?')){S=seed();save();go('dashboard')}">Reset sample data</button>`};
+
+V.about=()=>`<h1>About</h1><div class="card"><h3>Advanced Library Management System</h3><p>The Advanced Library Management System makes library operations faster, more organized, and easier to manage. Instead of maintaining large amounts of information in paper registers, librarians can manage records digitally and retrieve information quickly.</p><p>Data structures used: <b>lists</b> (books, transactions), <b>dictionaries</b> (fast ID lookup), <b>sets</b> (unique categories), <b>a stack</b> (recent actions) and <b>a queue</b> (notifications).</p><p style="color:var(--mut)">Data is saved in this browser.</p></div>`;
+
+
+const COV=[['Clean Code','#0f766e','#134e4a'],['Algorithms','#1d4ed8','#1e3a8a'],['1984','#b91c1c','#7f1d1d'],['Sapiens','#b45309','#78350f'],['Wings of Fire','#c2410c','#7c2d12'],['Python','#4d7c0f','#365314']];
+const covHTML=p=>COV.map(([t,a,b],i)=>`<svg viewBox="0 0 90 130" class="cov" style="animation-delay:${i*.12}s" role="img" aria-label="${t} book cover"><defs><linearGradient id="${p}${i}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${a}"/><stop offset="1" stop-color="${b}"/></linearGradient></defs><rect width="90" height="130" rx="4" fill="url(#${p}${i})"/><rect width="8" height="130" fill="#0004"/><circle cx="52" cy="44" r="18" fill="none" stroke="#fff6" stroke-width="2"/><path d="M40 44h24M52 32v24" stroke="#fff6" stroke-width="2"/><text x="52" y="98" text-anchor="middle" fill="#fff" font-family="Georgia,serif" font-size="11" font-weight="700">${t}</text><rect x="30" y="110" width="44" height="2" fill="#fff8"/></svg>`).join('');$('covers').innerHTML=covHTML('L');
+try{const r=sessionStorage.getItem('role');if(ACL[r]){ROLE=r;enter()}}catch(e){}
+</script>
+</body>
+</html>

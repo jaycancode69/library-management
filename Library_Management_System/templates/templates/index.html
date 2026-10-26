@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block title %}LibSphere - Discover & Browse Books{% endblock %}
+
+{% block content %}
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="hero-pill">
+      <span>✨ Modern Library Portal</span>
+    </div>
+    <h1 class="hero-title">
+      Explore Knowledge with <span class="gradient-text">LibSphere</span>
+    </h1>
+    <p class="hero-subtitle">
+      Search through thousands of curated titles, view live availability status, and manage our public reading repository in real-time.
+    </p>
+    <div class="hero-actions">
+      <a href="#catalog-section" class="btn btn-primary" id="btn-browse">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"/>
+          <path d="m21 21-4.3-4.3"/>
+        </svg>
+        Explore Catalog
+      </a>
+      {% if not session.get('loggedin') %}
+        <a href="{{ url_for('login') }}" class="btn btn-secondary" id="btn-hero-login">Admin Access &rarr;</a>
+      {% else %}
+        <a href="{{ url_for('dashboard') }}" class="btn btn-secondary" id="btn-hero-dash">Open Dashboard &rarr;</a>
+      {% endif %}
+    </div>
+  </section>
+
+  <!-- Live Stats Section -->
+  <section class="stats-grid">
+    <div class="stat-card primary">
+      <div class="stat-icon">📚</div>
+      <div>
+        <div class="stat-number">{{ stats.total }}</div>
+        <div class="stat-label">Total Books</div>
+      </div>
+    </div>
+
+    <div class="stat-card success">
+      <div class="stat-icon">✅</div>
+      <div>
+        <div class="stat-number">{{ stats.available }}</div>
+        <div class="stat-label">Available Now</div>
+      </div>
+    </div>
+
+    <div class="stat-card warning">
+      <div class="stat-icon">⏳</div>
+      <div>
+        <div class="stat-number">{{ stats.issued }}</div>
+        <div class="stat-label">Currently Issued</div>
+      </div>
+    </div>
+
+    <div class="stat-card info">
+      <div class="stat-icon">🏷️</div>
+      <div>
+        <div class="stat-number">{{ stats.categories }}</div>
+        <div class="stat-label">Categories</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Interactive Search & Filter Toolbar -->
+  <section id="catalog-section">
+    <div class="toolbar">
+      <div class="search-box">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"/>
+          <path d="m21 21-4.3-4.3"/>
+        </svg>
+        <input type="text" id="searchBooks" class="search-input" placeholder="Search by title, author, or keyword..." autocomplete="off">
+      </div>
+
+      <div style="display: flex; gap: 0.75rem; align-items: center;">
+        <select id="filterCategory" class="filter-select">
+          <option value="all">All Categories</option>
+          {% for cat in categories %}
+            <option value="{{ cat }}">{{ cat }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <!-- Book Grid List -->
+    <div class="books-grid">
+      {% for book in books %}
+        <article class="book-card" data-category="{{ book.category }}">
+          <div>
+            <div class="book-category">{{ book.category }}</div>
+            <h2 class="book-title">{{ book.title }}</h2>
+            <div class="book-author">By {{ book.author }}</div>
+          </div>
+          <div class="book-meta">
+            {% if book.status == 'Available' %}
+              <span class="badge badge-available">
+                <span class="badge-dot"></span> Available
+              </span>
+            {% else %}
+              <span class="badge badge-issued">
+                <span class="badge-dot"></span> Issued
+              </span>
+            {% endif %}
+            <span style="font-size: 0.8rem; color: var(--text-muted);">ISBN: {{ book.isbn }}</span>
+          </div>
+        </article>
+      {% else %}
+        <div style="grid-column: 1 / -1; text-align: center; padding: 3rem; color: var(--text-secondary);">
+          <p>No books currently cataloged in the library.</p>
+        </div>
+      {% endfor %}
+    </div>
+  </section>
+{% endblock %}
